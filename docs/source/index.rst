@@ -21,7 +21,6 @@ New to AutoMapper? Check out the :doc:`Getting-started` page first.
    
    Getting-started
    Understanding-your-mapping
-   The-MyGet-build
 
 .. _feature-docs:
 
@@ -67,6 +66,7 @@ New to AutoMapper? Check out the :doc:`Getting-started` page first.
    :caption: Upgrading
    
    API-Changes
+   15.0-Upgrade-Guide
    13.0-Upgrade-Guide
    12.0-Upgrade-Guide
    11.0-Upgrade-Guide
@@ -85,7 +85,3 @@ Housekeeping
 ============
 
 The latest builds can be found at `NuGet <http://www.nuget.org/packages/automapper>`_
-
-The dev builds can be found at `MyGet <https://myget.org/feed/automapperdev/package/nuget/AutoMapper>`_
-
-The discussion group is hosted on `Google Groups <http://groups.google.com/group/automapper-users>`_

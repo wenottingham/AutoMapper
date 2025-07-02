@@ -1,6 +1,11 @@
 using AutoMapper.Features;
 using AutoMapper.Internal.Mappers;
 using AutoMapper.QueryableExtensions.Impl;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+
 namespace AutoMapper;
 
 using Validator = Action<ValidationContext>;
@@ -84,19 +89,33 @@ public interface IMapperConfigurationExpression : IProfileExpression
     /// <param name="profileName">Profile name, must be unique</param>
     /// <param name="config">Profile configuration</param>
     void CreateProfile(string profileName, Action<IProfileExpression> config);
+    
+    /// <summary>
+    /// Gets or sets the license key. You can find your license key in your <a href="https://luckypennysoftware.com/account">account</a>.
+    /// </summary>
+    string LicenseKey { get; set; }
+
+    /// <summary>
+    /// Gets or sets the default service lifetime. Used for services registered using <see cref="ServiceCollectionExtensions.AddAutoMapper(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{AutoMapper.IMapperConfigurationExpression})"/>
+    /// Defaults to <see cref="Microsoft.Extensions.DependencyInjection.ServiceLifetime.Transient"/>
+    /// </summary>
+    public ServiceLifetime ServiceLifetime { get; set; }
 }
 public sealed class MapperConfigurationExpression : Profile, IGlobalConfigurationExpression
 {
+    static readonly Type[] AmTypes = [typeof(IValueResolver<,,>), typeof(IMemberValueResolver<,,,>), typeof(ITypeConverter<,>), typeof(IValueConverter<,>), typeof(IMappingAction<,>)];
+    
     private readonly List<Profile> _profiles = [];
     private readonly List<Validator> _validators = [];
     private Func<Type, object> _serviceCtor = Activator.CreateInstance;
     private List<IProjectionMapper> _projectionMappers;
+    private List<Assembly> _scannedAssembles = [];
     /// <summary>
     /// Add an action to be called when validating the configuration.
     /// </summary>
     /// <param name="validator">the validation callback</param>
     void IGlobalConfigurationExpression.Validator(Validator validator) => 
-        _validators.Add(validator ?? throw new ArgumentNullException(nameof(validator)));
+        _validators.Add(validator ?? throw new System.ArgumentNullException(nameof(validator)));
     /// <summary>
     /// How many levels deep should AutoMapper try to inline the execution plan for child classes.
     /// See <a href="https://automapper.readthedocs.io/en/latest/Understanding-your-mapping.html">the docs</a> for details.
@@ -112,6 +131,10 @@ public sealed class MapperConfigurationExpression : Profile, IGlobalConfiguratio
     /// Must be zero for EF6. Can be greater than zero for EF Core.
     /// </summary>
     int IGlobalConfigurationExpression.RecursiveQueriesMaxDepth { get; set; }
+        
+    public string LicenseKey { get; set; }
+
+    public ServiceLifetime ServiceLifetime { get; set; } = ServiceLifetime.Transient;
 
     IReadOnlyCollection<IProfileConfiguration> IGlobalConfigurationExpression.Profiles => _profiles;
     Func<Type, object> IGlobalConfigurationExpression.ServiceCtor => _serviceCtor;
@@ -122,6 +145,30 @@ public sealed class MapperConfigurationExpression : Profile, IGlobalConfiguratio
     List<IObjectMapper> IGlobalConfigurationExpression.Mappers { get; } = MapperRegistry.Mappers();
 
     Features<IGlobalFeature> IGlobalConfigurationExpression.Features { get; } = new();
+
+    void IGlobalConfigurationExpression.RegisterServices(IServiceCollection services)
+    {
+        foreach (var type in _scannedAssembles.SelectMany(a => a.GetTypes().Where(type => type.IsClass && !type.IsAbstract)))
+        {
+            if (TryGetAmType(type, out var amType))
+            {
+                // use try add to avoid double-registration
+                services.TryAdd(new ServiceDescriptor(type, type, ServiceLifetime));
+            }
+        }
+        
+        return;
+
+        bool TryGetAmType(Type type, out Type amType)
+        {
+            amType = AmTypes
+                .Select(type.GetGenericInterface)
+                .FirstOrDefault(serviceType => serviceType != null);
+            
+            return amType != null;
+        }
+    }
+    
 
     public void AddProfile(Profile profile) => _profiles.Add(profile);
 
@@ -157,6 +204,10 @@ public sealed class MapperConfigurationExpression : Profile, IGlobalConfiguratio
 
     private void AddMapsCore(IEnumerable<Assembly> assembliesToScan)
     {
+        assembliesToScan = assembliesToScan.ToList();
+        
+        _scannedAssembles.AddRange(assembliesToScan);
+        
         Profile autoMapAttributeProfile = new(nameof(AutoMapAttribute));
         foreach (var type in assembliesToScan.Where(a => !a.IsDynamic && a != typeof(Profile).Assembly).SelectMany(a => a.GetTypes()))
         {
@@ -184,5 +235,5 @@ public sealed class MapperConfigurationExpression : Profile, IGlobalConfiguratio
         AddProfile(autoMapAttributeProfile);
     }
 
-    public void ConstructServicesUsing(Func<Type, object> constructor) => _serviceCtor = constructor ?? throw new ArgumentNullException(nameof(constructor));
+    public void ConstructServicesUsing(Func<Type, object> constructor) => _serviceCtor = constructor ?? throw new System.ArgumentNullException(nameof(constructor));
 }

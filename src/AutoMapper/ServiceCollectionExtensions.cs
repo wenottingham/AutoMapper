@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Logging;
+
+namespace Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,62 +23,24 @@ using Microsoft.Extensions.Options;
 /// </summary>
 public static class ServiceCollectionExtensions
 {
-    static readonly Type[] AmTypes = [typeof(IValueResolver<,,>), typeof(IMemberValueResolver<,,,>), typeof(ITypeConverter<,>), typeof(IValueConverter<,>), typeof(IMappingAction<,>)];
     public static IServiceCollection AddAutoMapper(this IServiceCollection services, Action<IMapperConfigurationExpression> configAction)
-        => AddAutoMapperClasses(services, (sp, cfg) => configAction?.Invoke(cfg), null);
+        => AddAutoMapperClasses(services, configAction);
+    
+    // public static IServiceCollection AddAutoMapper(this IServiceCollection services, Action<IServiceProvider, IMapperConfigurationExpression> configAction)
+    //     => AddAutoMapperClasses(services, configAction);
 
-    public static IServiceCollection AddAutoMapper(this IServiceCollection services, params Assembly[] assemblies)
-        => AddAutoMapperClasses(services, null, assemblies);
-
-    public static IServiceCollection AddAutoMapper(this IServiceCollection services, Action<IMapperConfigurationExpression> configAction, params Assembly[] assemblies)
-        => AddAutoMapperClasses(services, (sp, cfg) => configAction?.Invoke(cfg), assemblies);
-
-    public static IServiceCollection AddAutoMapper(this IServiceCollection services, Action<IServiceProvider, IMapperConfigurationExpression> configAction, params Assembly[] assemblies)
-        => AddAutoMapperClasses(services, configAction, assemblies);
-
-    public static IServiceCollection AddAutoMapper(this IServiceCollection services, Action<IMapperConfigurationExpression> configAction, IEnumerable<Assembly> assemblies, ServiceLifetime serviceLifetime = ServiceLifetime.Transient)
-        => AddAutoMapperClasses(services, (sp, cfg) => configAction?.Invoke(cfg), assemblies, serviceLifetime);
-
-    public static IServiceCollection AddAutoMapper(this IServiceCollection services, Action<IServiceProvider, IMapperConfigurationExpression> configAction, IEnumerable<Assembly> assemblies, ServiceLifetime serviceLifetime = ServiceLifetime.Transient)
-        => AddAutoMapperClasses(services, configAction, assemblies, serviceLifetime);
-
-    public static IServiceCollection AddAutoMapper(this IServiceCollection services, IEnumerable<Assembly> assemblies, ServiceLifetime serviceLifetime = ServiceLifetime.Transient)
-        => AddAutoMapperClasses(services, null, assemblies, serviceLifetime);
-
-    public static IServiceCollection AddAutoMapper(this IServiceCollection services, params Type[] profileAssemblyMarkerTypes)
-        => AddAutoMapperClasses(services, null, profileAssemblyMarkerTypes.Select(t => t.GetTypeInfo().Assembly));
-
-    public static IServiceCollection AddAutoMapper(this IServiceCollection services, Action<IMapperConfigurationExpression> configAction, params Type[] profileAssemblyMarkerTypes)
-        => AddAutoMapperClasses(services, (sp, cfg) => configAction?.Invoke(cfg), profileAssemblyMarkerTypes.Select(t => t.GetTypeInfo().Assembly));
-
-    public static IServiceCollection AddAutoMapper(this IServiceCollection services, Action<IServiceProvider, IMapperConfigurationExpression> configAction, params Type[] profileAssemblyMarkerTypes)
-        => AddAutoMapperClasses(services, configAction, profileAssemblyMarkerTypes.Select(t => t.GetTypeInfo().Assembly));
-
-    public static IServiceCollection AddAutoMapper(this IServiceCollection services, Action<IMapperConfigurationExpression> configAction,
-        IEnumerable<Type> profileAssemblyMarkerTypes, ServiceLifetime serviceLifetime = ServiceLifetime.Transient)
-        => AddAutoMapperClasses(services, (sp, cfg) => configAction?.Invoke(cfg), profileAssemblyMarkerTypes.Select(t => t.GetTypeInfo().Assembly), serviceLifetime);
-
-    public static IServiceCollection AddAutoMapper(this IServiceCollection services, Action<IServiceProvider, IMapperConfigurationExpression> configAction,
-        IEnumerable<Type> profileAssemblyMarkerTypes, ServiceLifetime serviceLifetime = ServiceLifetime.Transient)
-        => AddAutoMapperClasses(services, configAction, profileAssemblyMarkerTypes.Select(t => t.GetTypeInfo().Assembly), serviceLifetime);
-
-    private static IServiceCollection AddAutoMapperClasses(IServiceCollection services, Action<IServiceProvider, IMapperConfigurationExpression> configAction,
-        IEnumerable<Assembly> assembliesToScan, ServiceLifetime serviceLifetime = ServiceLifetime.Transient)
+    private static IServiceCollection AddAutoMapperClasses(IServiceCollection services, Action<IMapperConfigurationExpression> configAction)
     {
-        if (configAction != null)
-        {
-            services.AddOptions<MapperConfigurationExpression>().Configure<IServiceProvider>((options, sp) => configAction(sp, options));
-        }
-        if (assembliesToScan != null)
-        {
-            assembliesToScan = assembliesToScan.Where(a => !a.IsDynamic && a != typeof(Mapper).Assembly).Distinct();
-            services.Configure<MapperConfigurationExpression>(options => options.AddMaps(assembliesToScan));
-            foreach (var type in assembliesToScan.SelectMany(a => a.GetTypes().Where(type => type.IsClass && !type.IsAbstract && IsAmType(type))))
-            {
-                // use try add to avoid double-registration
-                services.TryAddTransient(type);
-            }
-        }
+        configAction ??=  _ => { };
+
+        var config = new MapperConfigurationExpression();
+
+        configAction(config);
+        
+        ((IGlobalConfigurationExpression)config).RegisterServices(services);
+
+        services.AddSingleton(config);
+        
         // Just return if we've already added AutoMapper to avoid double-registration
         if (services.Any(sd => sd.ServiceType == typeof(IMapper)))
         {
@@ -85,11 +49,11 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IConfigurationProvider>(sp =>
         {
             // A mapper configuration is required
-            var options = sp.GetRequiredService<IOptions<MapperConfigurationExpression>>();
-            return new MapperConfiguration(options.Value);
+            var options = sp.GetRequiredService<MapperConfigurationExpression>();
+            return new MapperConfiguration(options, sp.GetRequiredService<ILoggerFactory>());
         });
-        services.Add(new(typeof(IMapper), sp => new Mapper(sp.GetRequiredService<IConfigurationProvider>(), sp.GetService), serviceLifetime));
+        services.Add(new(typeof(IMapper), sp => new Mapper(sp.GetRequiredService<IConfigurationProvider>(), sp.GetService), config.ServiceLifetime));
+
         return services;
-        bool IsAmType(Type type) => Array.Exists(AmTypes, openType => type.GetGenericInterface(openType) != null);
     }
 }

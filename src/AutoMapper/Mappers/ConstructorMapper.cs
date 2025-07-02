@@ -9,4 +9,7 @@ public sealed class ConstructorMapper : IObjectMapper
         var constructor = GetConstructor(sourceExpression.Type, destExpression.Type);
         return New(constructor, ToType(sourceExpression, constructor.FirstParameterType()));
     }
+#if NETSTANDARD2_0
+    public TypePair? GetAssociatedTypes(TypePair initialTypes) => null;
+#endif
 }

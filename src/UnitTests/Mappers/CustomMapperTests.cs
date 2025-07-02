@@ -67,6 +67,9 @@ public class When_adding_a_custom_mapper : AutoMapperSpecBase
 
             return expr.Body;
         }
+#if NET481
+    public TypePair? GetAssociatedTypes(TypePair initialTypes) => null;
+#endif        
     }
 
     public class ClassA

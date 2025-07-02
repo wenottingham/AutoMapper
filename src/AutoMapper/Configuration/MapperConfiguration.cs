@@ -1,3 +1,7 @@
+using AutoMapper.Licensing;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+
 namespace AutoMapper;
 using Features;
 using Internal.Mappers;
@@ -44,6 +48,7 @@ public sealed class MapperConfiguration : IGlobalConfiguration
     private LazyValue<ProjectionBuilder> _projectionBuilder;
     private readonly LockingConcurrentDictionary<MapRequest, Delegate> _executionPlans;
     private readonly MapperConfigurationExpression _configurationExpression;
+    private readonly ILoggerFactory _loggerFactory;
     private readonly Features<IRuntimeFeature> _features = new();
     private readonly bool _hasOpenMaps;
     private readonly HashSet<TypeMap> _typeMapsPath = [];
@@ -56,9 +61,12 @@ public sealed class MapperConfiguration : IGlobalConfiguration
     private readonly ParameterReplaceVisitor _parameterReplaceVisitor = new();
     private readonly ConvertParameterReplaceVisitor _convertParameterReplaceVisitor = new();
     private readonly List<Type> _typesInheritance = [];
-    public MapperConfiguration(MapperConfigurationExpression configurationExpression)
+    private readonly LicenseAccessor _licenseAccessor;
+
+    public MapperConfiguration(MapperConfigurationExpression configurationExpression, ILoggerFactory loggerFactory)
     {
-        _configurationExpression=configurationExpression;
+        _configurationExpression = configurationExpression;
+        _loggerFactory = loggerFactory;
         var configuration = (IGlobalConfigurationExpression)configurationExpression;
         if (configuration.MethodMappingEnabled != false)
         {
@@ -85,6 +93,7 @@ public sealed class MapperConfiguration : IGlobalConfiguration
         _hasOpenMaps = openTypeMapsCount > 0;
         _resolvedMaps = new(2 * typeMapsCount);
         configuration.Features.Configure(this);
+        _licenseAccessor = new LicenseAccessor(this, _loggerFactory);
 
         Seal();
 
@@ -105,6 +114,10 @@ public sealed class MapperConfiguration : IGlobalConfiguration
         _parameterReplaceVisitor = null;
         _typesInheritance = null;
         _runtimeMaps = new(GetTypeMap, openTypeMapsCount);
+
+        var validator = new LicenseValidator(loggerFactory);
+        validator.Validate(_licenseAccessor.Current);
+        
         return;
         void Seal()
         {
@@ -148,7 +161,9 @@ public sealed class MapperConfiguration : IGlobalConfiguration
             return executionPlan.Compile(); // breakpoint here to inspect all execution plans
         }
     }
-    public MapperConfiguration(Action<IMapperConfigurationExpression> configure) : this(Build(configure)){}
+    // For unit testing purposes only
+    internal MapperConfiguration(Action<IMapperConfigurationExpression> configure) : this(configure, new NullLoggerFactory()){}
+    public MapperConfiguration(Action<IMapperConfigurationExpression> configure, ILoggerFactory loggerFactory) : this(Build(configure), loggerFactory){}
     static MapperConfigurationExpression Build(Action<IMapperConfigurationExpression> configure)
     {
         MapperConfigurationExpression expr = new();
@@ -484,6 +499,8 @@ public sealed class MapperConfiguration : IGlobalConfiguration
     void IGlobalConfiguration.AssertConfigurationIsValid<TProfile>() => this.Internal().AssertConfigurationIsValid(typeof(TProfile).FullName);
     void IGlobalConfiguration.RegisterAsMap(TypeMapConfiguration typeMapConfiguration) =>
         _resolvedMaps[typeMapConfiguration.Types] = GetIncludedTypeMap(new(typeMapConfiguration.SourceType, typeMapConfiguration.DestinationTypeOverride));
+
+    string IGlobalConfiguration.LicenseKey => _configurationExpression.LicenseKey;
 }
 struct LazyValue<T>(Func<T> factory) where T : class
 {

@@ -19,7 +19,7 @@ In the following mapping the property baz will only be mapped if it is greater t
 var configuration = new MapperConfiguration(cfg => {
   cfg.CreateMap<Foo,Bar>()
     .ForMember(dest => dest.baz, opt => opt.Condition(src => (src.baz >= 0)));
-});
+}, loggerFactory);
 ```
 If you have a resolver, see [here](Custom-value-resolvers.html#resolvers-and-conditions) for a concrete example.
   
@@ -36,7 +36,7 @@ var configuration = new MapperConfiguration(cfg => {
             // Expensive resolution process that can be avoided with a PreCondition
         });
     });
-});
+}, loggerFactory);
 ```
 
 You can [see the steps](Understanding-your-mapping.html) yourself.

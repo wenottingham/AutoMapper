@@ -2,6 +2,7 @@
 using AutoMapper.Features;
 using AutoMapper.Internal.Mappers;
 using AutoMapper.QueryableExtensions.Impl;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AutoMapper.Internal;
 
@@ -43,6 +44,12 @@ public interface IGlobalConfigurationExpression : IMapperConfigurationExpression
     /// Must be zero for EF6. Can be greater than zero for EF Core.
     /// </summary>
     int RecursiveQueriesMaxDepth { get; set; }
+
+    /// <summary>
+    /// Registers services from assemblies used in <see cref="IMapperConfigurationExpression.AddMaps(System.Collections.Generic.IEnumerable{System.Reflection.Assembly})"/>
+    /// </summary>
+    /// <param name="services">Service collection</param>
+    void RegisterServices(IServiceCollection services);
 }
 [EditorBrowsable(EditorBrowsableState.Never)]
 public interface IGlobalConfiguration : IConfigurationProvider
@@ -153,6 +160,8 @@ public interface IGlobalConfiguration : IConfigurationProvider
     DefaultExpression GetDefault(Type type);
     ParameterReplaceVisitor ParameterReplaceVisitor();
     ConvertParameterReplaceVisitor ConvertParameterReplaceVisitor();
+    
+    string LicenseKey { get; }
 }
 [EditorBrowsable(EditorBrowsableState.Never)]
 public interface IProfileExpressionInternal : IProfileExpression

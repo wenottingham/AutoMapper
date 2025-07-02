@@ -32,7 +32,7 @@ There is a third-party [NuGet package](https://www.nuget.org/packages/AutoMapper
 
 Also, check [this blog](https://dotnetfalcon.com/autofac-support-for-automapper/).
 
-### [Other DI engines](https://github.com/AutoMapper/AutoMapper/wiki/DI-examples)
+### [Other DI engines](https://github.com/LuckyPennySoftware/AutoMapper/wiki/DI-examples)
 
 ## Low level API-s
 
@@ -44,7 +44,7 @@ var configuration = new MapperConfiguration(cfg =>
     cfg.ConstructServicesUsing(ObjectFactory.GetInstance);
 
     cfg.CreateMap<Source, Destination>();
-});
+}, loggerFactory);
 ```
 
 Or dynamic service location, to be used in the case of instance-based containers (including child/nested containers):

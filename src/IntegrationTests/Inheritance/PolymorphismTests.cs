@@ -1,6 +1,6 @@
 ﻿namespace AutoMapper.IntegrationTests.Inheritance;
 
-public class PolymorphismTests : IntegrationTest<PolymorphismTests.DatabaseInitializer>
+public class PolymorphismTests(DatabaseFixture databaseFixture) : IntegrationTest<PolymorphismTests.DatabaseInitializer>(databaseFixture)
 {
     public abstract class Vehicle
     {
@@ -76,7 +76,7 @@ public class PolymorphismTests : IntegrationTest<PolymorphismTests.DatabaseIniti
     [Fact]
     public void Should_project_base_queryable_to_derived_models_polymorphic()
     {
-        using var context = new Context();
+        using var context = Fixture.CreateContext();
         var results = context.Vehicles.ProjectTo<VehicleModel>(Configuration).ToArray();
         results.Length.ShouldBe(3);
         results.ShouldContain(x => x.GetType() == typeof(VehicleModel), 1);
@@ -87,7 +87,7 @@ public class PolymorphismTests : IntegrationTest<PolymorphismTests.DatabaseIniti
     [Fact]
     public void Should_project_derived_queryable_to_derived_models_if_derived_models_exist()
     {
-        using var context = new Context();
+        using var context = Fixture.CreateContext();
         var results = context.Motorcycles.ProjectTo<MotorcycleModel>(Configuration).ToArray();
         results.Length.ShouldBe(1);
         results.ShouldContain(x => x.GetType() == typeof(MotorcycleModel), 1);
@@ -96,7 +96,7 @@ public class PolymorphismTests : IntegrationTest<PolymorphismTests.DatabaseIniti
     [Fact]
     public void Should_project_derived_queryable_to_base_models_if_no_derived_models_exist()
     {
-        using var context = new Context();
+        using var context = Fixture.CreateContext();
         var results = context.Cars.ProjectTo<VehicleModel>(Configuration).ToArray();
         results.Length.ShouldBe(1);
         results.ShouldContain(x => x.GetType() == typeof(VehicleModel), 1);

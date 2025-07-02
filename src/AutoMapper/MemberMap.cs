@@ -92,6 +92,12 @@ public class MemberMap : IValueResolver
         ChainSourceMembers(configuration, source, destinationMember);
     MemberInfo IValueResolver.GetSourceMember(MemberMap memberMap) => SourceMembers[0];
     Type IValueResolver.ResolvedType => SourceMembers[^1].GetMemberType();
+    
+#if NETSTANDARD2_0
+    public string SourceMemberName => null;
+    public LambdaExpression ProjectToExpression => null;
+    public IValueResolver CloseGenerics(TypeMap typeMap) => this;
+#endif
 }
 public readonly record struct ValueTransformerConfiguration(Type ValueType, LambdaExpression TransformerExpression)
 {

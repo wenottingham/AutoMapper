@@ -32,7 +32,7 @@ public sealed class PathConfigurationExpression<TSource, TDestination, TMember>(
     public void Ignore() => PathMapActions.Add(pm => pm.Ignored = true);
     public void MapFromUntyped(LambdaExpression sourceExpression)
     {
-        _sourceExpression = sourceExpression ?? throw new ArgumentNullException(nameof(sourceExpression), $"{nameof(sourceExpression)} may not be null when mapping {DestinationMember.Name} from {typeof(TSource)} to {typeof(TDestination)}.");
+        _sourceExpression = sourceExpression ?? throw new System.ArgumentNullException(nameof(sourceExpression), $"{nameof(sourceExpression)} may not be null when mapping {DestinationMember.Name} from {typeof(TSource)} to {typeof(TDestination)}.");
         PathMapActions.Add(pm => pm.MapFrom(sourceExpression));
     }
     public void Configure(TypeMap typeMap)
@@ -66,6 +66,10 @@ public sealed class PathConfigurationExpression<TSource, TDestination, TMember>(
     public LambdaExpression SourceExpression => _sourceExpression;
     public LambdaExpression GetDestinationExpression() => _destinationExpression;
     public IPropertyMapConfiguration Reverse() => Create(_sourceExpression, _destinationExpression);
+#if NETSTANDARD2_0
+    public bool Ignored => false;
+ #endif
+
     public void Condition(Func<ConditionParameters<TSource, TDestination, TMember>, bool> condition) =>
         PathMapActions.Add(pm =>
         {

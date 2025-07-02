@@ -14,4 +14,7 @@ public sealed class KeyValueMapper : IObjectMapper
         var mapValues = configuration.MapExpression(profileMap, values, ExpressionBuilder.Property(sourceExpression, "Value"));
         return New(destinationType.GetConstructor(destinationArguments), mapKeys, mapValues);
     }
+#if NETSTANDARD2_0
+    public TypePair? GetAssociatedTypes(TypePair initialTypes) => null;
+#endif
 }

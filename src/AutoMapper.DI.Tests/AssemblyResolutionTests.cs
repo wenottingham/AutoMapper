@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AutoMapper.Extensions.Microsoft.DependencyInjection.Tests
 {
@@ -20,7 +22,11 @@ namespace AutoMapper.Extensions.Microsoft.DependencyInjection.Tests
         private static ServiceProvider BuildServiceProvider()
         {
             IServiceCollection services = new ServiceCollection();
-            services.AddAutoMapper(typeof(Source).GetTypeInfo().Assembly);
+            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+            services.AddAutoMapper(opt =>
+            {
+                opt.AddMaps(typeof(Source).GetTypeInfo().Assembly);
+            });
             var serviceProvider = services.BuildServiceProvider();
             return serviceProvider;
         }

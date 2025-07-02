@@ -105,7 +105,7 @@ public static class ReflectionHelper
         PropertyInfo property => property.PropertyType,
         MethodInfo method => method.ReturnType,
         FieldInfo field => field.FieldType,
-        null => throw new ArgumentNullException(nameof(member)),
+        null => throw new System.ArgumentNullException(nameof(member)),
         _ => throw new ArgumentOutOfRangeException(nameof(member))
     };
 }

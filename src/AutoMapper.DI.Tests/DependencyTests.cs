@@ -1,4 +1,7 @@
-﻿namespace AutoMapper.Extensions.Microsoft.DependencyInjection.Tests
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+
+namespace AutoMapper.Extensions.Microsoft.DependencyInjection.Tests
 {
     using System;
     using global::Microsoft.Extensions.DependencyInjection;
@@ -13,7 +16,11 @@
         {
             IServiceCollection services = new ServiceCollection();
             services.AddTransient<ISomeService>(sp => new FooService(5));
-            services.AddAutoMapper(typeof(Source), typeof(Profile));
+            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+            services.AddAutoMapper(opt =>
+            {
+                opt.AddMaps(typeof(Source), typeof(Profile));
+            });
             _provider = services.BuildServiceProvider();
 
             _provider.GetService<IConfigurationProvider>().AssertConfigurationIsValid();

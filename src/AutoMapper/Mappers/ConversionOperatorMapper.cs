@@ -20,4 +20,7 @@ public sealed class ConversionOperatorMapper : IObjectMapper
         var conversionOperator = GetConversionOperator(sourceExpression.Type, destExpression.Type);
         return Call(conversionOperator, ToType(sourceExpression, conversionOperator.FirstParameterType()));
     }
+#if NETSTANDARD2_0
+    public TypePair? GetAssociatedTypes(TypePair initialTypes) => null;
+#endif    
 }

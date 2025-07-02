@@ -81,4 +81,7 @@ public sealed class FromStringDictionaryMapper : IObjectMapper
             }
         }
     }
+#if NETSTANDARD2_0
+    public TypePair? GetAssociatedTypes(TypePair initialTypes) => null;
+#endif
 }

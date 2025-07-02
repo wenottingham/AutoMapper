@@ -43,7 +43,7 @@ public sealed class TypeMap
         }
     }
     public string CheckRecord() => ConstructorMap?.Ctor is ConstructorInfo ctor && ctor.IsFamily && ctor.Has<CompilerGeneratedAttribute>() ?
-        " When mapping to records, consider using only public constructors. See https://docs.automapper.org/en/latest/Construction.html." : null;
+        " When mapping to records, consider using only public constructors. See https://docs.automapper.io/en/latest/Construction.html." : null;
     public Features<IRuntimeFeature> Features => Details.Features;
     private TypeMapDetails Details => _details ??= new();
     public bool HasDetails => _details != null;

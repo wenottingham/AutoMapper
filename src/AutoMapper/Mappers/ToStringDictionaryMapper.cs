@@ -7,4 +7,7 @@ public sealed class ToStringDictionaryMapper : IObjectMapper
         Call(MembersDictionaryMethodInfo, sourceExpression.ToObject(), Constant(profileMap));
     private static Dictionary<string, object> MembersDictionary(object source, ProfileMap profileMap) =>
         profileMap.CreateTypeDetails(source.GetType()).ReadAccessors.ToDictionary(p => p.Name, p => p.GetMemberValue(source));
+#if NETSTANDARD2_0
+    public TypePair? GetAssociatedTypes(TypePair initialTypes) => null;
+#endif
 }

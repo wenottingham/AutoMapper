@@ -6,7 +6,14 @@ public interface IPropertyMapConfiguration
     LambdaExpression SourceExpression { get; }
     LambdaExpression GetDestinationExpression();
     IPropertyMapConfiguration Reverse();
-    bool Ignored => false;
+    bool Ignored
+#if NET8_0_OR_GREATER    
+        => false;
+#else
+    {
+        get;
+    }
+#endif
 }
 public class MemberConfigurationExpression<TSource, TDestination, TMember>(MemberInfo destinationMember, Type sourceType) : IMemberConfigurationExpression<TSource, TDestination, TMember>, IPropertyMapConfiguration
 {

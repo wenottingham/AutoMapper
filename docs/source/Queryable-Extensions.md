@@ -43,7 +43,7 @@ You can use the Queryable Extensions like so:
 ```c#
 var configuration = new MapperConfiguration(cfg =>
     cfg.CreateProjection<OrderLine, OrderLineDTO>()
-    .ForMember(dto => dto.Item, conf => conf.MapFrom(ol => ol.Item.Name)));
+    .ForMember(dto => dto.Item, conf => conf.MapFrom(ol => ol.Item.Name)), loggerFactory);
 
 public List<OrderLineDTO> GetLinesForOrder(int orderId)
 {
@@ -107,7 +107,7 @@ In the case where members names don't line up, or you want to create calculated 
 ```c#
 var configuration = new MapperConfiguration(cfg => cfg.CreateProjection<Customer, CustomerDto>()
     .ForMember(d => d.FullName, opt => opt.MapFrom(c => c.FirstName + " " + c.LastName))
-    .ForMember(d => d.TotalContacts, opt => opt.MapFrom(c => c.Contacts.Count()));
+    .ForMember(d => d.TotalContacts, opt => opt.MapFrom(c => c.Contacts.Count())), loggerFactory);
 ```
 
 AutoMapper passes the supplied expression with the built projection. As long as your query provider can interpret the supplied expression, everything will be passed down all the way to the database.
@@ -168,7 +168,7 @@ dbContext.Orders.ProjectTo<OrderDto>(configuration,
     null,
     dest => dest.LineItems.Select(item => item.Product));
 ```
-For more information, see [the tests](https://github.com/AutoMapper/AutoMapper/search?p=1&q=ExplicitExpansion&utf8=%E2%9C%93).
+For more information, see [the tests](https://github.com/LuckyPennySoftware/AutoMapper/search?p=1&q=ExplicitExpansion&utf8=%E2%9C%93).
 
 ### Aggregations
 

@@ -14,10 +14,7 @@ namespace AutoMapper.Extensions.Microsoft.DependencyInjection.Tests
         {
             IServiceCollection services = new ServiceCollection();
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
-            services.AddAutoMapper(opt =>
-            {
-                opt.AddMaps(typeof(Source3));
-            });
+            services.AddAutoMapper(_ => { }, typeof(Source3));
 
             var serviceProvider = services.BuildServiceProvider();
 

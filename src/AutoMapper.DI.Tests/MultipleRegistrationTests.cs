@@ -30,18 +30,9 @@ namespace AutoMapper.Extensions.Microsoft.DependencyInjection.Tests
             var services = new ServiceCollection();
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
 
-            services.AddAutoMapper(opt =>
-            {
-                opt.AddMaps(typeof(MultipleRegistrationTests));
-            });
-            services.AddAutoMapper(opt =>
-            {
-                opt.AddMaps(typeof(MultipleRegistrationTests));
-            });
-            services.AddAutoMapper(opt =>
-            {
-                opt.AddMaps(typeof(MultipleRegistrationTests));
-            });
+            services.AddAutoMapper(_ => { }, typeof(MultipleRegistrationTests));
+            services.AddAutoMapper(_ => { }, typeof(MultipleRegistrationTests));
+            services.AddAutoMapper(_ => { }, typeof(MultipleRegistrationTests));
             services.AddTransient<ISomeService, MutableService>();
 
             var serviceProvider = services.BuildServiceProvider();

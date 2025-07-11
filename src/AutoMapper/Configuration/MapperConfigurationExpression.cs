@@ -94,12 +94,6 @@ public interface IMapperConfigurationExpression : IProfileExpression
     /// Gets or sets the license key. You can find your license key in your <a href="https://luckypennysoftware.com/account">account</a>.
     /// </summary>
     string LicenseKey { get; set; }
-
-    /// <summary>
-    /// Gets or sets the default service lifetime. Used for services registered using <see cref="ServiceCollectionExtensions.AddAutoMapper(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{AutoMapper.IMapperConfigurationExpression})"/>
-    /// Defaults to <see cref="Microsoft.Extensions.DependencyInjection.ServiceLifetime.Transient"/>
-    /// </summary>
-    public ServiceLifetime ServiceLifetime { get; set; }
 }
 public sealed class MapperConfigurationExpression : Profile, IGlobalConfigurationExpression
 {
@@ -145,30 +139,6 @@ public sealed class MapperConfigurationExpression : Profile, IGlobalConfiguratio
     List<IObjectMapper> IGlobalConfigurationExpression.Mappers { get; } = MapperRegistry.Mappers();
 
     Features<IGlobalFeature> IGlobalConfigurationExpression.Features { get; } = new();
-
-    void IGlobalConfigurationExpression.RegisterServices(IServiceCollection services)
-    {
-        foreach (var type in _scannedAssembles.SelectMany(a => a.GetTypes().Where(type => type.IsClass && !type.IsAbstract)))
-        {
-            if (TryGetAmType(type, out var amType))
-            {
-                // use try add to avoid double-registration
-                services.TryAdd(new ServiceDescriptor(type, type, ServiceLifetime));
-            }
-        }
-        
-        return;
-
-        bool TryGetAmType(Type type, out Type amType)
-        {
-            amType = AmTypes
-                .Select(type.GetGenericInterface)
-                .FirstOrDefault(serviceType => serviceType != null);
-            
-            return amType != null;
-        }
-    }
-    
 
     public void AddProfile(Profile profile) => _profiles.Add(profile);
 

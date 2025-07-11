@@ -8,16 +8,20 @@ namespace AutoMapper.Extensions.Microsoft.DependencyInjection.Tests
     using Shouldly;
     using Xunit;
 
-    public class DependencyTests
+    public class ServiceProviderTests
     {
         private readonly IServiceProvider _provider;
 
-        public DependencyTests()
+        public ServiceProviderTests()
         {
             IServiceCollection services = new ServiceCollection();
             services.AddTransient<ISomeService>(sp => new FooService(5));
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
-            services.AddAutoMapper(_ => { }, typeof(Source), typeof(Profile));
+            services.AddAutoMapper((sp, _) =>
+            {
+                var service = sp.GetRequiredService<ISomeService>();
+                service.Modify(5);
+            }, typeof(Source), typeof(Profile));
             _provider = services.BuildServiceProvider();
 
             _provider.GetService<IConfigurationProvider>().AssertConfigurationIsValid();

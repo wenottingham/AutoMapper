@@ -60,7 +60,7 @@ namespace AutoMapper.Extensions.Microsoft.DependencyInjection.Tests
         public void Cannot_correctly_resolve_scoped_services_as_singleton()
         {
             var services = new ServiceCollection();
-            services.AddSingleaton<ILoggerFactory>(NullLoggerFactory.Instance);
+            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
             services.AddAutoMapper(_ => { }, [typeof(Source).Assembly], ServiceLifetime.Singleton);
             services.AddScoped<ISomeService, MutableService>();
 

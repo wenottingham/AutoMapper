@@ -80,7 +80,7 @@ public class Startup
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddAutoMapper(typeof(Startup).Assembly);
+        services.AddAutoMapper(_ => { }, typeof(Startup).Assembly);
     }
     //..
 }

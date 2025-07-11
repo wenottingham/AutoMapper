@@ -10,11 +10,11 @@ Starting with version 13.0, `AddAutoMapper` is part of the core package and the 
 
 You define the configuration using [profiles](Configuration.html#profile-instances). And then you let AutoMapper know in what assemblies are those profiles defined by calling the `IServiceCollection` extension method `AddAutoMapper` at startup:
 ```c#
-services.AddAutoMapper(profileAssembly1, profileAssembly2 /*, ...*/);
+services.AddAutoMapper(cfg => { }, profileAssembly1, profileAssembly2 /*, ...*/);
 ```
 or marker types:
 ```c#
-services.AddAutoMapper(typeof(ProfileTypeFromAssembly1), typeof(ProfileTypeFromAssembly2) /*, ...*/);
+services.AddAutoMapper(cfg => { }, typeof(ProfileTypeFromAssembly1), typeof(ProfileTypeFromAssembly2) /*, ...*/);
 ```
 Now you can inject AutoMapper at runtime into your services/controllers:
 ```c#

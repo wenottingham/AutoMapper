@@ -50,9 +50,8 @@ namespace AutoMapper.Extensions.Microsoft.DependencyInjection.Tests.Integrations
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
             services.AddAutoMapper(opt =>
             {
-                opt.AddMaps(GetType().Assembly);
                 opt.CreateMap<Foo, Bar>().ReverseMap();
-            });
+            }, GetType().Assembly);
 			var sp = services.BuildServiceProvider();
 			Bar actual;
 

@@ -13,10 +13,7 @@ namespace AutoMapper.Extensions.Microsoft.DependencyInjection.Tests
         {
             var services = new ServiceCollection();
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
-            services.AddAutoMapper(opt =>
-            {
-                opt.AddMaps(typeof(Source).Assembly);
-            });
+            services.AddAutoMapper(_ => { }, typeof(Source).Assembly);
             services.AddScoped<ISomeService, MutableService>();
 
             var provider = services.BuildServiceProvider();
@@ -39,11 +36,9 @@ namespace AutoMapper.Extensions.Microsoft.DependencyInjection.Tests
         {
             var services = new ServiceCollection();
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
-            services.AddAutoMapper(opt =>
+            services.AddAutoMapper(_ =>
             {
-                opt.ServiceLifetime = ServiceLifetime.Scoped;
-                opt.AddMaps(typeof(Source).Assembly);
-            });
+            }, [typeof(Source).Assembly], ServiceLifetime.Scoped);
             services.AddScoped<ISomeService, MutableService>();
 
             var provider = services.BuildServiceProvider();
@@ -65,12 +60,8 @@ namespace AutoMapper.Extensions.Microsoft.DependencyInjection.Tests
         public void Cannot_correctly_resolve_scoped_services_as_singleton()
         {
             var services = new ServiceCollection();
-            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
-            services.AddAutoMapper(opt =>
-            {
-                opt.AddMaps(typeof(Source).Assembly);
-                opt.ServiceLifetime = ServiceLifetime.Singleton;
-            });
+            services.AddSingleaton<ILoggerFactory>(NullLoggerFactory.Instance);
+            services.AddAutoMapper(_ => { }, [typeof(Source).Assembly], ServiceLifetime.Singleton);
             services.AddScoped<ISomeService, MutableService>();
 
             var provider = services.BuildServiceProvider();

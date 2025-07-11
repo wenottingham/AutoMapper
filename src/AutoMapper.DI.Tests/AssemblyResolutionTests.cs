@@ -23,10 +23,7 @@ namespace AutoMapper.Extensions.Microsoft.DependencyInjection.Tests
         {
             IServiceCollection services = new ServiceCollection();
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
-            services.AddAutoMapper(opt =>
-            {
-                opt.AddMaps(typeof(Source).GetTypeInfo().Assembly);
-            });
+            services.AddAutoMapper(_ => { }, typeof(Source).GetTypeInfo().Assembly);
             var serviceProvider = services.BuildServiceProvider();
             return serviceProvider;
         }

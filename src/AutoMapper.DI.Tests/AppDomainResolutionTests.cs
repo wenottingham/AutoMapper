@@ -17,10 +17,7 @@ namespace AutoMapper.Extensions.Microsoft.DependencyInjection.Tests
         {
             IServiceCollection services = new ServiceCollection();
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
-            services.AddAutoMapper(opt =>
-            {
-                opt.AddMaps(typeof(AppDomainResolutionTests));
-            });
+            services.AddAutoMapper(_ => { }, typeof(AppDomainResolutionTests));
             _provider = services.BuildServiceProvider();
         }
 

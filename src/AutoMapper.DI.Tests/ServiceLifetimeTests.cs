@@ -34,10 +34,9 @@ namespace AutoMapper.Extensions.Microsoft.DependencyInjection.Tests
 			var serviceCollection = new ServiceCollection();
 
 			//act
-            serviceCollection.AddAutoMapper(opt =>
+            serviceCollection.AddAutoMapper(_ =>
             {
-                opt.ServiceLifetime = ServiceLifetime.Singleton;
-            });
+            }, new List<Assembly>(), ServiceLifetime.Singleton);
 			var serviceDescriptor = serviceCollection.FirstOrDefault(sd => sd.ServiceType == typeof(IMapper));
 
 			//assert

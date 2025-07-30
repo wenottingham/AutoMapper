@@ -29,6 +29,10 @@
     <AdditionalApiCompatOptions>--exclude-non-browsable --exclude-compiler-generated</AdditionalApiCompatOptions>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(IsWindows)' == 'true' ">
+    <TargetFrameworks>$(TargetFrameworks);net462</TargetFrameworks>
+  </PropertyGroup>
+  
   <ItemGroup>
     <ResolvedMatchingContract Include="..\LastMajorVersionBinary\AutoMapper.dll"/>
   </ItemGroup>
@@ -40,7 +44,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="[8.0.0, )"/>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[8.0.0, )"/>
     <PackageReference Include="Microsoft.Extensions.Options" Version="[8.0.0, )"/>
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="[8.0.1, )"/>
     <PackageReference Include="Microsoft.Bcl.HashCode" Version="[6.0.0, )" Condition="'$(TargetFramework)' == 'netstandard2.0'" />

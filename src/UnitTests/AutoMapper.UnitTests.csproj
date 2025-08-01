@@ -1,14 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework Condition=" '$(OS)' != 'Windows_NT' ">net9.0</TargetFramework>
-    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">net481;net9.0</TargetFrameworks>
+    <TargetFrameworks>net9.0</TargetFrameworks>
     <NoWarn>$(NoWarn);649;618</NoWarn>
     <AssemblyOriginatorKeyFile>..\..\AutoMapper.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
-    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(IsWindows)' == 'true' ">
+    <PublicSign>true</PublicSign>
+    <TargetFrameworks>$(TargetFrameworks);net462</TargetFrameworks>
+  </PropertyGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\AutoMapper\AutoMapper.csproj" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.Testing" Version="9.6.0" />
